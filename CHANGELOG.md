@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2] - 2025-01-18
+
+### Fixed
+- Updated repository URL to correct GitHub location: https://github.com/monostate/browsernative-client
+- Fixed bugs URL to point to correct repository issues page
+- Synchronized package version with GitHub repository
+
 ## [1.1.1] - 2025-05-31
 
 ### Fixed
