@@ -121,7 +121,7 @@ export class BrowserNativeClient {
           headers: {
             'x-api-key': this.apiKey,
             'Content-Type': 'application/json',
-            'User-Agent': 'Browser Native Client SDK/1.2.0'
+            'User-Agent': 'Browser Native Client SDK/1.2.1'
           }
         };
 
