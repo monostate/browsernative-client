@@ -3,7 +3,7 @@
  */
 
 export interface ClientOptions {
-  /** Base URL for the API (default: https://browsernative.monostate.ai) */
+  /** Base URL for the API (default: https://bnca-api.fly.dev) */
   baseUrl?: string;
   /** Request timeout in milliseconds (default: 30000) */
   timeout?: number;
