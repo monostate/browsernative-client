@@ -1,8 +1,8 @@
-# @browsernative/client
+# @monostate/browsernative-client
 
 > **Official JavaScript/TypeScript client for Browser Native API**
 
-[![npm version](https://badge.fury.io/js/%40browsernative%2Fclient.svg)](https://badge.fury.io/js/%40browsernative%2Fclient)
+[![npm version](https://badge.fury.io/js/%40monostate%2Fbrowsernative-client.svg)](https://badge.fury.io/js/%40monostate%2Fbrowsernative-client)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -13,11 +13,11 @@ A lightweight, fast, and reliable client for the Browser Native web scraping and
 ### Installation
 
 ```bash
-npm install @browsernative/client
+npm install @monostate/browsernative-client
 # or
-yarn add @browsernative/client
+yarn add @monostate/browsernative-client
 # or  
-pnpm add @browsernative/client
+pnpm add @monostate/browsernative-client
 ```
 
 ### Get Your API Key
@@ -29,7 +29,7 @@ pnpm add @browsernative/client
 ### Basic Usage
 
 ```javascript
-import { BrowserNativeClient } from '@browsernative/client';
+import { BrowserNativeClient } from '@monostate/browsernative-client';
 
 const client = new BrowserNativeClient('your-api-key');
 
@@ -46,7 +46,7 @@ console.log(screenshot.screenshot); // Base64 image
 ### Quick Functions
 
 ```javascript
-import { quickScrape, quickScreenshot, quickShot, quickAnalyze } from '@browsernative/client';
+import { quickScrape, quickScreenshot, quickShot, quickAnalyze } from '@monostate/browsernative-client';
 
 // One-line scraping
 const content = await quickScrape('https://example.com', 'your-api-key');
@@ -199,7 +199,7 @@ console.log(health.data.services); // Service status breakdown
 ```javascript
 // hooks/useBrowserNative.js
 import { useState } from 'react';
-import { BrowserNativeClient } from '@browsernative/client';
+import { BrowserNativeClient } from '@monostate/browsernative-client';
 
 export function useBrowserNative(apiKey) {
   const [loading, setLoading] = useState(false);
@@ -235,7 +235,7 @@ export function useBrowserNative(apiKey) {
 ```javascript
 // composables/useBrowserNative.js
 import { ref } from 'vue';
-import { BrowserNativeClient } from '@browsernative/client';
+import { BrowserNativeClient } from '@monostate/browsernative-client';
 
 export function useBrowserNative(apiKey) {
   const loading = ref(false);
@@ -270,7 +270,7 @@ export function useBrowserNative(apiKey) {
 
 ```javascript
 // pages/api/scrape.js
-import { BrowserNativeClient } from '@browsernative/client';
+import { BrowserNativeClient } from '@monostate/browsernative-client';
 
 const client = new BrowserNativeClient(process.env.BROWSER_NATIVE_API_KEY);
 
@@ -300,7 +300,7 @@ export default async function handler(req, res) {
 
 ```javascript
 import express from 'express';
-import { BrowserNativeClient } from '@browsernative/client';
+import { BrowserNativeClient } from '@monostate/browsernative-client';
 
 const app = express();
 const client = new BrowserNativeClient(process.env.BROWSER_NATIVE_API_KEY);
@@ -342,7 +342,7 @@ You can use this client directly in browsers, but be careful with API keys:
 </head>
 <body>
     <script type="module">
-        import { BrowserNativeClient } from 'https://cdn.skypack.dev/@browsernative/client';
+        import { BrowserNativeClient } from 'https://cdn.skypack.dev/@monostate/browsernative-client';
         
         // ⚠️ Never expose your API key in client-side code!
         // Use a proxy server or environment variables
@@ -405,7 +405,7 @@ Common error scenarios:
 Full TypeScript support with comprehensive type definitions:
 
 ```typescript
-import { BrowserNativeClient, ScrapeResult, AnalyzeResult } from '@browsernative/client';
+import { BrowserNativeClient, ScrapeResult, AnalyzeResult } from '@monostate/browsernative-client';
 
 const client: BrowserNativeClient = new BrowserNativeClient('your-api-key');
 
@@ -421,6 +421,23 @@ const analysis: AnalyzeResult = await client.analyze(url, question);
 | **Starter** | 10,000 | 60/minute |
 | **Pro** | 100,000 | 300/minute |
 | **Enterprise** | Unlimited | Custom |
+
+## 📋 Changelog
+
+### v1.2.0 (Latest)
+- 🔧 **Timeout Improvements**: Enhanced timeout handling and request reliability
+- 📝 **Documentation Updates**: Comprehensive API documentation and examples
+- 🏷️ **Package Naming**: Proper package name consistency across all imports
+- ⚡ **Performance Optimizations**: Better error handling and response processing
+- 🌐 **Framework Integration**: Improved React, Vue, and Next.js examples
+
+### v1.1.2
+- Bug fixes and stability improvements
+- Enhanced error handling
+
+### v1.1.1
+- Initial TypeScript support
+- Basic API client functionality
 
 ## 🤝 Support
 
