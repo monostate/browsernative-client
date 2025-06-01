@@ -1,0 +1,49 @@
+{
+  "name": "@monostate/browsernative-client",
+  "version": "1.1.1",
+  "description": "Browser Native client SDK for web scraping and content extraction API",
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md",
+    "package.json"
+  ],
+  "keywords": [
+    "web-scraping",
+    "api-client",
+    "browser-native",
+    "content-extraction",
+    "web-automation",
+    "data-extraction",
+    "javascript",
+    "typescript",
+    "browser",
+    "client-sdk"
+  ],
+  "author": "Browser Native Team",
+  "license": "MIT",
+  "dependencies": {},
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/browsernative/client-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/browsernative/client-sdk/issues"
+  },
+  "homepage": "https://bnca.monostate.ai",
+  "publishConfig": {
+    "access": "public"
+  }
+}
