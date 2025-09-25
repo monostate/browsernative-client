@@ -74,14 +74,33 @@ export interface ScrapeResult {
   attempt?: number;
 }
 
-export interface AnalyzeResult extends ScrapeResult {
-  /** AI analysis response */
-  analysis?: {
-    answer: string;
-    confidence: number;
-    processingTime: number;
-    language: string;
+export interface AnalyzeResult {
+  /** Whether the request was successful */
+  success: boolean;
+  /** API response data */
+  data?: {
+    /** Whether the inner request was successful */
+    success?: boolean;
+    /** The answer from AI analysis */
+    answer?: string;
+    /** Metadata about the request */
+    metadata?: {
+      url: string;
+      question: string;
+      method: string;
+      timestamp: string;
+      performance: {
+        totalTime: number;
+      };
+      screenshot?: string | null;
+    };
   };
+  /** Error message (if failed) */
+  error?: string;
+  /** Response time in milliseconds */
+  responseTime: number;
+  /** Attempt number that succeeded */
+  attempt?: number;
 }
 
 export interface UsageResult {
