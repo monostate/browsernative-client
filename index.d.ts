@@ -14,6 +14,8 @@ export interface ClientOptions {
 }
 
 export interface ScrapeOptions {
+  /** Force a specific scraping method */
+  method?: 'auto' | 'direct' | 'lightpanda' | 'puppeteer';
   /** Include screenshot in the response */
   includeScreenshot?: boolean;
   /** Wait for specific selector before extracting content */
@@ -27,6 +29,26 @@ export interface ScrapeOptions {
   };
   /** Additional metadata to extract */
   extractMetadata?: boolean;
+}
+
+export interface BulkScrapeOptions extends ScrapeOptions {
+  /** Number of concurrent requests (default: 5) */
+  concurrency?: number;
+  /** Continue on error (default: true) */
+  continueOnError?: boolean;
+  /** Progress callback */
+  progressCallback?: (progress: { processed: number; total: number; percentage: number }) => void;
+}
+
+export interface BulkScrapeResult {
+  results: Array<ScrapeResult & { url: string }>;
+  stats: {
+    total: number;
+    successful: number;
+    failed: number;
+    totalTime: number;
+    averageTime: number;
+  };
 }
 
 export interface ScreenshotOptions extends ScrapeOptions {
@@ -173,6 +195,11 @@ export declare class BrowserNativeClient {
   analyze(url: string, question: string, options?: AnalyzeOptions): Promise<AnalyzeResult>;
 
   /**
+   * Scrape multiple URLs with concurrency control
+   */
+  bulkScrape(urls: string[], options?: BulkScrapeOptions): Promise<BulkScrapeResult>;
+
+  /**
    * Get account usage statistics
    */
   getUsage(days?: number): Promise<UsageResult>;
@@ -219,5 +246,14 @@ export declare function quickShot(
   apiKey: string, 
   options?: ScreenshotOptions
 ): Promise<ScrapeResult>;
+
+/**
+ * Convenience function for bulk scraping multiple URLs
+ */
+export declare function bulkScrape(
+  urls: string[],
+  apiKey: string,
+  options?: BulkScrapeOptions
+): Promise<BulkScrapeResult>;
 
 export default BrowserNativeClient;

@@ -84,6 +84,57 @@ export class BrowserNativeClient {
   }
 
   /**
+   * Scrape multiple URLs with concurrency control
+   * @param {string[]} urls - URLs to scrape
+   * @param {object} options - Bulk scraping options
+   * @returns {Promise<object>} Aggregated results
+   */
+  async bulkScrape(urls, options = {}) {
+    const concurrency = options.concurrency || 5;
+    const continueOnError = options.continueOnError !== false;
+    const results = [];
+    const startTime = Date.now();
+    let processed = 0;
+
+    const queue = [...urls];
+    const workers = Array.from({ length: Math.min(concurrency, urls.length) }, async () => {
+      while (queue.length > 0) {
+        const url = queue.shift();
+        if (!url) break;
+        try {
+          const result = await this.scrape(url, options);
+          results.push({ url, ...result });
+        } catch (error) {
+          results.push({ url, success: false, error: error.message });
+          if (!continueOnError) throw error;
+        }
+        processed++;
+        if (options.progressCallback) {
+          options.progressCallback({
+            processed,
+            total: urls.length,
+            percentage: (processed / urls.length) * 100,
+          });
+        }
+      }
+    });
+
+    await Promise.all(workers);
+
+    const successful = results.filter(r => r.success).length;
+    return {
+      results,
+      stats: {
+        total: urls.length,
+        successful,
+        failed: urls.length - successful,
+        totalTime: Date.now() - startTime,
+        averageTime: Math.round((Date.now() - startTime) / urls.length),
+      },
+    };
+  }
+
+  /**
    * Get account usage statistics
    * @param {number} days - Number of days to fetch (max 30)
    * @returns {Promise<object>} Usage statistics
@@ -121,7 +172,7 @@ export class BrowserNativeClient {
           headers: {
             'x-api-key': this.apiKey,
             'Content-Type': 'application/json',
-            'User-Agent': 'Browser Native Client SDK/1.2.1'
+            'User-Agent': 'Browser Native Client SDK/2.0.0'
           }
         };
 
@@ -229,6 +280,18 @@ export async function quickAnalyze(url, question, apiKey, options = {}) {
 export async function quickShot(url, apiKey, options = {}) {
   const client = new BrowserNativeClient(apiKey, options);
   return client.quickshot(url, options);
+}
+
+/**
+ * Convenience function for bulk scraping multiple URLs
+ * @param {string[]} urls - URLs to scrape
+ * @param {string} apiKey - Your API key
+ * @param {object} options - Bulk options (concurrency, continueOnError, progressCallback)
+ * @returns {Promise<object>} Aggregated results
+ */
+export async function bulkScrape(urls, apiKey, options = {}) {
+  const client = new BrowserNativeClient(apiKey, options);
+  return client.bulkScrape(urls, options);
 }
 
 // Default export for CommonJS compatibility

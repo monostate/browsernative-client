@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.0] - 2026-03-07
+
+### Added
+- `bulkScrape(urls, options)` method with concurrency control, progress tracking, and error handling
+- `bulkScrape()` convenience function
+- `method` option to force specific scraping method (`'auto'`, `'direct'`, `'lightpanda'`, `'puppeteer'`)
+- `BulkScrapeOptions` and `BulkScrapeResult` TypeScript interfaces
+
+### Changed
+- Bumped minimum Node.js to 18+
+- Updated User-Agent to 2.0.0
+- Rewrote README — removed emojis, broken links, verbose framework examples
+
 ## [1.1.2] - 2025-01-18
 
 ### Fixed
