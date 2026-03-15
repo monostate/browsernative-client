@@ -144,6 +144,30 @@ export class BrowserNativeClient {
   }
 
   /**
+   * Create a persistent browser session via WebSocket
+   * @param {object} options - Session options
+   * @param {'auto'|'headless'|'visual'|'computer-use'} options.mode - Browser mode (default: 'auto')
+   * @param {number} [options.screenWidth] - Screen width for computer-use mode
+   * @param {number} [options.screenHeight] - Screen height for computer-use mode
+   * @returns {Promise<BrowserSession>} Connected browser session
+   */
+  async createSession(options = {}) {
+    const wsUrl = this.baseUrl.replace(/^http/, 'ws');
+    const mode = options.mode || 'auto';
+    const params = new URLSearchParams({
+      apiKey: this.apiKey,
+      mode,
+    });
+    if (options.screenWidth) params.set('screenWidth', String(options.screenWidth));
+    if (options.screenHeight) params.set('screenHeight', String(options.screenHeight));
+    const url = `${wsUrl}/session?${params}`;
+
+    const session = new BrowserSession(url, { verbose: this.verbose });
+    await session.connect();
+    return session;
+  }
+
+  /**
    * Check API health and your account status
    * @returns {Promise<object>} Health check result
    */
@@ -293,6 +317,150 @@ export async function bulkScrape(urls, apiKey, options = {}) {
   const client = new BrowserNativeClient(apiKey, options);
   return client.bulkScrape(urls, options);
 }
+
+// ── Browser Session (WebSocket) ──────────────────────────────────────────────
+
+class BrowserSession {
+  constructor(url, options = {}) {
+    this._url = url;
+    this._ws = null;
+    this._nextId = 1;
+    this._pending = new Map(); // id → { resolve, reject }
+    this._verbose = options.verbose || false;
+    this._eventHandlers = {};
+    this.sessionId = null;
+    this.backend = null;
+    this.vncUrl = null;
+  }
+
+  async connect() {
+    return new Promise((resolve, reject) => {
+      const WebSocketImpl = typeof WebSocket !== 'undefined'
+        ? WebSocket
+        : null;
+
+      if (!WebSocketImpl) {
+        // Node.js — try dynamic import
+        import('ws').then(ws => {
+          this._ws = new ws.default(this._url);
+          this._wireEvents(resolve, reject);
+        }).catch(() => {
+          reject(new Error('WebSocket not available. Install "ws" package for Node.js: npm install ws'));
+        });
+        return;
+      }
+
+      this._ws = new WebSocketImpl(this._url);
+      this._wireEvents(resolve, reject);
+    });
+  }
+
+  _wireEvents(onConnected, onError) {
+    this._ws.onmessage = (event) => {
+      const data = typeof event.data === 'string' ? event.data : event.data.toString();
+      let msg;
+      try { msg = JSON.parse(data); } catch { return; }
+
+      if (msg.type === 'connected') {
+        this.sessionId = msg.sessionId;
+        this.backend = msg.backend;
+        this.vncUrl = msg.vncUrl || null;
+        if (this._verbose) console.log(`Browser Native: Session ${msg.sessionId} connected (${msg.backend})`);
+        onConnected(this);
+        return;
+      }
+
+      if (msg.type === 'fallback') {
+        this.backend = msg.to;
+        if (this._verbose) console.log(`Browser Native: Fallback ${msg.from} → ${msg.to} (${msg.reason})`);
+        if (this._eventHandlers.fallback) this._eventHandlers.fallback(msg);
+        return;
+      }
+
+      if (msg.type === 'closed') {
+        if (this._verbose) console.log(`Browser Native: Session closed (${msg.reason})`);
+        if (this._eventHandlers.closed) this._eventHandlers.closed(msg);
+        return;
+      }
+
+      // Match response to pending request by id
+      if (msg.id != null && this._pending.has(msg.id)) {
+        const { resolve, reject } = this._pending.get(msg.id);
+        this._pending.delete(msg.id);
+        if (msg.type === 'error') {
+          reject(new Error(msg.message));
+        } else {
+          if (msg.backend) this.backend = msg.backend;
+          resolve(msg.data);
+        }
+      }
+    };
+
+    this._ws.onerror = (err) => {
+      onError(new Error(err.message || 'WebSocket connection failed'));
+    };
+
+    this._ws.onclose = (event) => {
+      // Reject all pending requests
+      for (const [, { reject }] of this._pending) {
+        reject(new Error(`Session closed: ${event.reason || 'unknown'}`));
+      }
+      this._pending.clear();
+    };
+  }
+
+  _send(action, params = {}) {
+    return new Promise((resolve, reject) => {
+      if (!this._ws || this._ws.readyState !== 1) {
+        return reject(new Error('Session not connected'));
+      }
+      const id = this._nextId++;
+      this._pending.set(id, { resolve, reject });
+      this._ws.send(JSON.stringify({ id, action, ...params }));
+    });
+  }
+
+  on(event, handler) {
+    this._eventHandlers[event] = handler;
+    return this;
+  }
+
+  async goto(url) { return this._send('goto', { url }); }
+  async click(selector, options = {}) { return this._send('click', { selector, ...options }); }
+  async type(selector, text, options = {}) { return this._send('type', { selector, text, ...options }); }
+  async scroll(direction = 'down', amount = 500) { return this._send('scroll', { direction, amount }); }
+  async hover(selector) { return this._send('hover', { selector }); }
+  async select(selector, ...values) { return this._send('select', { selector, values }); }
+  async pressKey(key) { return this._send('pressKey', { key }); }
+  async goBack() { return this._send('goBack'); }
+  async goForward() { return this._send('goForward'); }
+  async screenshot(options = {}) { return this._send('screenshot', options); }
+  async getPageState(options = {}) { return this._send('getPageState', options); }
+  async extractContent() { return this._send('extractContent'); }
+  async waitFor(selector, timeout) { return this._send('waitFor', { selector, timeout }); }
+  async evaluate(fn) { return this._send('evaluate', { fn }); }
+  async getCookies() { return this._send('getCookies'); }
+  async setCookies(cookies) { return this._send('setCookies', { cookies }); }
+
+  // Coordinate-based actions (computer-use mode)
+  async mouseMove(x, y) { return this._send('mouseMove', { x, y }); }
+  async clickAt(x, y, button = 'left') { return this._send('clickAt', { x, y, button }); }
+  async doubleClickAt(x, y, button = 'left') { return this._send('doubleClickAt', { x, y, button }); }
+  async drag(startX, startY, endX, endY) { return this._send('drag', { startX, startY, endX, endY }); }
+  async scrollAt(x, y, direction, amount) { return this._send('scrollAt', { x, y, direction, amount }); }
+  async typeText(text) { return this._send('typeText', { text }); }
+  async getCursorPosition() { return this._send('getCursorPosition'); }
+  async getScreenSize() { return this._send('getScreenSize'); }
+
+  close() {
+    if (this._ws) {
+      this._ws.close();
+      this._ws = null;
+    }
+  }
+}
+
+export { BrowserSession };
 
 // Default export for CommonJS compatibility
 export default BrowserNativeClient;

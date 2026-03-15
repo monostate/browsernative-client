@@ -112,6 +112,50 @@ const client = new BrowserNativeClient(apiKey, {
 }
 ```
 
+### Browser sessions
+
+Persistent browser sessions with real-time control over WebSocket:
+
+```javascript
+const session = await client.createSession({ mode: 'auto' });
+
+await session.goto('https://example.com');
+await session.click('#login');
+await session.type('#email', 'user@example.com');
+const state = await session.getPageState({ includeScreenshot: true });
+await session.screenshot();
+
+// Listen for backend fallback events
+session.on('fallback', (e) => console.log(`${e.from} -> ${e.to}: ${e.reason}`));
+
+session.close();
+```
+
+Modes: `auto` (LightPanda + Chrome fallback), `headless`, `visual`, `computer-use`.
+
+#### Computer use mode
+
+For AI agents that control the browser by pixel coordinates:
+
+```javascript
+const session = await client.createSession({ mode: 'computer-use', screenWidth: 1280, screenHeight: 800 });
+
+await session.goto('https://example.com');
+await session.clickAt(640, 400);
+await session.typeText('hello world');
+await session.mouseMove(100, 200);
+await session.drag(10, 20, 300, 400);
+await session.scrollAt(640, 400, 'down', 5);
+const pos = await session.getCursorPosition();
+const size = await session.getScreenSize();
+const screenshot = await session.screenshot();
+
+// VNC streaming URL
+console.log(session.vncUrl);
+
+session.close();
+```
+
 ## TypeScript
 
 Full type definitions included.

@@ -168,6 +168,114 @@ export interface HealthResult {
   responseTime: number;
 }
 
+export interface SessionOptions {
+  /** Browser mode (default: 'auto') */
+  mode?: 'auto' | 'headless' | 'visual' | 'computer-use';
+  /** Screen width for computer-use mode */
+  screenWidth?: number;
+  /** Screen height for computer-use mode */
+  screenHeight?: number;
+}
+
+export interface PageState {
+  url: string;
+  title: string;
+  content?: string;
+  screenshot?: string;
+  interactiveElements?: Array<{
+    tag: string;
+    text?: string;
+    selector: string;
+    type?: string;
+    href?: string;
+  }>;
+}
+
+export interface FallbackEvent {
+  type: 'fallback';
+  from: string;
+  to: string;
+  reason: string;
+}
+
+export interface ClosedEvent {
+  type: 'closed';
+  reason: string;
+}
+
+export interface Cookie {
+  name: string;
+  value: string;
+  domain?: string;
+  path?: string;
+  expires?: number;
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: 'Strict' | 'Lax' | 'None';
+}
+
+/**
+ * Persistent browser session over WebSocket
+ */
+export declare class BrowserSession {
+  /** Session ID assigned by the server */
+  sessionId: string | null;
+  /** Current browser backend ('lightpanda', 'chrome', or 'computer-use') */
+  backend: string | null;
+  /** VNC URL for computer-use mode (null otherwise) */
+  vncUrl: string | null;
+
+  /** Navigate to a URL */
+  goto(url: string): Promise<any>;
+  /** Click an element */
+  click(selector: string, options?: { timeout?: number }): Promise<any>;
+  /** Type text into an element */
+  type(selector: string, text: string, options?: { clear?: boolean; delay?: number }): Promise<any>;
+  /** Scroll the page */
+  scroll(direction?: 'up' | 'down', amount?: number): Promise<any>;
+  /** Hover over an element */
+  hover(selector: string): Promise<any>;
+  /** Select option(s) in a dropdown */
+  select(selector: string, ...values: string[]): Promise<any>;
+  /** Press a keyboard key */
+  pressKey(key: string): Promise<any>;
+  /** Navigate back */
+  goBack(): Promise<any>;
+  /** Navigate forward */
+  goForward(): Promise<any>;
+  /** Take a screenshot */
+  screenshot(options?: { fullPage?: boolean; type?: 'png' | 'jpeg' | 'webp'; quality?: number }): Promise<any>;
+  /** Get current page state with interactive elements */
+  getPageState(options?: { includeScreenshot?: boolean }): Promise<PageState>;
+  /** Extract page content as structured data */
+  extractContent(): Promise<any>;
+  /** Wait for a selector to appear */
+  waitFor(selector: string, timeout?: number): Promise<any>;
+  /** Evaluate JavaScript in the page context */
+  evaluate(fn: string): Promise<any>;
+  /** Get all cookies */
+  getCookies(): Promise<Cookie[]>;
+  /** Set cookies */
+  setCookies(cookies: Cookie[]): Promise<any>;
+
+  /** Coordinate-based actions (computer-use mode) */
+  mouseMove(x: number, y: number): Promise<any>;
+  clickAt(x: number, y: number, button?: 'left' | 'right' | 'middle'): Promise<any>;
+  doubleClickAt(x: number, y: number, button?: 'left' | 'right' | 'middle'): Promise<any>;
+  drag(startX: number, startY: number, endX: number, endY: number): Promise<any>;
+  scrollAt(x: number, y: number, direction: 'up' | 'down', amount?: number): Promise<any>;
+  typeText(text: string): Promise<any>;
+  getCursorPosition(): Promise<{ x: number; y: number }>;
+  getScreenSize(): Promise<{ width: number; height: number }>;
+
+  /** Listen for session events */
+  on(event: 'fallback', handler: (event: FallbackEvent) => void): this;
+  on(event: 'closed', handler: (event: ClosedEvent) => void): this;
+
+  /** Close the session */
+  close(): void;
+}
+
 /**
  * Browser Native API Client
  */
@@ -203,6 +311,11 @@ export declare class BrowserNativeClient {
    * Get account usage statistics
    */
   getUsage(days?: number): Promise<UsageResult>;
+
+  /**
+   * Create a persistent browser session via WebSocket
+   */
+  createSession(options?: SessionOptions): Promise<BrowserSession>;
 
   /**
    * Check API health and your account status
