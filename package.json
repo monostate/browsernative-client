@@ -1,7 +1,7 @@
 {
   "name": "@monostate/browsernative-client",
-  "version": "2.2.0",
-  "description": "Browser Native client SDK for web scraping and content extraction API",
+  "version": "3.0.0",
+  "description": "JavaScript/TypeScript client for a self-hosted node-scraper API (web scraping, screenshots, AI analysis, browser sessions)",
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",
@@ -15,7 +15,8 @@
     "index.js",
     "index.d.ts",
     "README.md",
-    "package.json"
+    "package.json",
+    "CHANGELOG.md"
   ],
   "keywords": [
     "web-scraping",
@@ -42,8 +43,11 @@
   "bugs": {
     "url": "https://github.com/monostate/browsernative-client/issues"
   },
-  "homepage": "https://bnca.monostate.ai",
+  "homepage": "https://github.com/monostate/browsernative-client#readme",
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "test": "node --test 'test/*.test.mjs'"
   }
 }

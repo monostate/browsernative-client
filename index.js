@@ -1,18 +1,37 @@
 /**
  * Browser Native Client SDK
- * 
- * A lightweight JavaScript client for the Browser Native web scraping API.
+ *
+ * A lightweight JavaScript client for a self-hosted node-scraper API
+ * (the HTTP/WebSocket service built on @monostate/node-scraper).
  * Works in browsers, Node.js, and edge environments.
+ *
+ * There is no hosted default: you run the API and point the client at it.
  */
 
+const USER_AGENT = 'Browser Native Client SDK/3.0.0';
+
 export class BrowserNativeClient {
-  constructor(apiKey, options = {}) {
-    if (!apiKey) {
-      throw new Error('API key is required. Get one at https://bnca.monostate.ai');
+  /**
+   * @param {string|{ baseUrl: string, apiKey?: string, timeout?: number, retries?: number, verbose?: boolean }} [apiKeyOrOptions]
+   *   Either the API key (string) followed by options, or a single options object.
+   * @param {{ baseUrl: string, apiKey?: string, timeout?: number, retries?: number, verbose?: boolean }} [options]
+   */
+  constructor(apiKeyOrOptions, options = {}) {
+    let apiKey = apiKeyOrOptions;
+    if (apiKeyOrOptions && typeof apiKeyOrOptions === 'object') {
+      options = apiKeyOrOptions;
+      apiKey = options.apiKey;
     }
-    
-    this.apiKey = apiKey;
-    this.baseUrl = options.baseUrl || 'https://bnca-api.fly.dev';
+    if (!options || !options.baseUrl) {
+      throw new Error(
+        'baseUrl is required. The hosted Browser Native API has been retired: ' +
+        'run your own node-scraper API and point the client at it, e.g. ' +
+        "new BrowserNativeClient({ baseUrl: 'http://localhost:3001', apiKey: '...' })"
+      );
+    }
+
+    this.apiKey = apiKey || null;
+    this.baseUrl = String(options.baseUrl).replace(/\/+$/, '');
     this.timeout = options.timeout || 30000;
     this.retries = options.retries || 2;
     this.verbose = options.verbose || false;
@@ -135,7 +154,7 @@ export class BrowserNativeClient {
   }
 
   /**
-   * Get account usage statistics
+   * Usage statistics (GET /stats) — only if your API implements it
    * @param {number} days - Number of days to fetch (max 30)
    * @returns {Promise<object>} Usage statistics
    */
@@ -154,10 +173,8 @@ export class BrowserNativeClient {
   async createSession(options = {}) {
     const wsUrl = this.baseUrl.replace(/^http/, 'ws');
     const mode = options.mode || 'auto';
-    const params = new URLSearchParams({
-      apiKey: this.apiKey,
-      mode,
-    });
+    const params = new URLSearchParams({ mode });
+    if (this.apiKey) params.set('apiKey', this.apiKey);
     if (options.screenWidth) params.set('screenWidth', String(options.screenWidth));
     if (options.screenHeight) params.set('screenHeight', String(options.screenHeight));
     const url = `${wsUrl}/session?${params}`;
@@ -194,9 +211,9 @@ export class BrowserNativeClient {
         const options = {
           method,
           headers: {
-            'x-api-key': this.apiKey,
             'Content-Type': 'application/json',
-            'User-Agent': 'Browser Native Client SDK/2.0.0'
+            'User-Agent': USER_AGENT,
+            ...(this.apiKey ? { 'x-api-key': this.apiKey } : {}),
           }
         };
 
@@ -260,7 +277,7 @@ export class BrowserNativeClient {
 /**
  * Convenience function for quick scraping without instantiating a client
  * @param {string} url - The URL to scrape
- * @param {string} apiKey - Your API key
+ * @param {string|object} apiKey - Your API key, or an options object with baseUrl (and optional apiKey)
  * @param {object} options - Additional options
  * @returns {Promise<object>} Scraping result
  */
@@ -272,7 +289,7 @@ export async function quickScrape(url, apiKey, options = {}) {
 /**
  * Convenience function for taking screenshots
  * @param {string} url - The URL to capture
- * @param {string} apiKey - Your API key
+ * @param {string|object} apiKey - Your API key, or an options object with baseUrl (and optional apiKey)
  * @param {object} options - Additional options
  * @returns {Promise<object>} Screenshot result
  */
@@ -285,7 +302,7 @@ export async function quickScreenshot(url, apiKey, options = {}) {
  * Convenience function for AI analysis
  * @param {string} url - The URL to analyze
  * @param {string} question - The question to answer
- * @param {string} apiKey - Your API key
+ * @param {string|object} apiKey - Your API key, or an options object with baseUrl (and optional apiKey)
  * @param {object} options - Additional options
  * @returns {Promise<object>} Analysis result
  */
@@ -297,7 +314,7 @@ export async function quickAnalyze(url, question, apiKey, options = {}) {
 /**
  * Convenience function for quick screenshot capture
  * @param {string} url - The URL to capture
- * @param {string} apiKey - Your API key
+ * @param {string|object} apiKey - Your API key, or an options object with baseUrl (and optional apiKey)
  * @param {object} options - Additional options
  * @returns {Promise<object>} Screenshot result
  */
@@ -309,7 +326,7 @@ export async function quickShot(url, apiKey, options = {}) {
 /**
  * Convenience function for bulk scraping multiple URLs
  * @param {string[]} urls - URLs to scrape
- * @param {string} apiKey - Your API key
+ * @param {string|object} apiKey - Your API key, or an options object with baseUrl (and optional apiKey)
  * @param {object} options - Bulk options (concurrency, continueOnError, progressCallback)
  * @returns {Promise<object>} Aggregated results
  */

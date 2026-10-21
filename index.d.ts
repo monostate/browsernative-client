@@ -3,8 +3,10 @@
  */
 
 export interface ClientOptions {
-  /** Base URL for the API (default: https://bnca-api.fly.dev) */
-  baseUrl?: string;
+  /** Base URL of your self-hosted node-scraper API, e.g. "http://localhost:3001" (required) */
+  baseUrl: string;
+  /** API key sent as x-api-key, if your deployment requires one */
+  apiKey?: string;
   /** Request timeout in milliseconds (default: 30000) */
   timeout?: number;
   /** Number of retry attempts (default: 2) */
@@ -80,7 +82,16 @@ export interface ScrapeResult {
     images?: string[];
   };
   /** Scraping method used */
-  method?: 'direct' | 'lightpanda' | 'puppeteer';
+  method?: 'direct' | 'direct-fetch' | 'lightpanda' | 'puppeteer' | 'pdf' | 'failed' | 'error';
+  /**
+   * Content outcome reported by the API (node-scraper v3+): whether the
+   * extracted content is usable, or why not. Optional for older servers.
+   */
+  contentStatus?: 'usable' | 'browser_required_shell' | 'blocked' | 'empty' | 'navigation_error' | 'unsupported' | 'rejected_by_caller';
+  /** HTTP status of the final response (node-scraper v3+) */
+  httpStatus?: number | null;
+  /** URL after redirects (node-scraper v3+) */
+  finalUrl?: string;
   /** Performance information */
   performance?: {
     totalTime: number;
@@ -280,7 +291,11 @@ export declare class BrowserSession {
  * Browser Native API Client
  */
 export declare class BrowserNativeClient {
-  constructor(apiKey: string, options?: ClientOptions);
+  constructor(options: ClientOptions);
+  constructor(apiKey: string | null | undefined, options: ClientOptions);
+  /** null when the deployment needs no key */
+  readonly apiKey: string | null;
+  readonly baseUrl: string;
 
   /**
    * Scrape a webpage and extract structured content
@@ -328,7 +343,7 @@ export declare class BrowserNativeClient {
  */
 export declare function quickScrape(
   url: string, 
-  apiKey: string, 
+  apiKey: string | ClientOptions, 
   options?: ScrapeOptions
 ): Promise<ScrapeResult>;
 
@@ -337,7 +352,7 @@ export declare function quickScrape(
  */
 export declare function quickScreenshot(
   url: string, 
-  apiKey: string, 
+  apiKey: string | ClientOptions, 
   options?: ScreenshotOptions
 ): Promise<ScrapeResult>;
 
@@ -347,7 +362,7 @@ export declare function quickScreenshot(
 export declare function quickAnalyze(
   url: string, 
   question: string, 
-  apiKey: string, 
+  apiKey: string | ClientOptions, 
   options?: AnalyzeOptions
 ): Promise<AnalyzeResult>;
 
@@ -356,7 +371,7 @@ export declare function quickAnalyze(
  */
 export declare function quickShot(
   url: string, 
-  apiKey: string, 
+  apiKey: string | ClientOptions, 
   options?: ScreenshotOptions
 ): Promise<ScrapeResult>;
 
@@ -365,7 +380,7 @@ export declare function quickShot(
  */
 export declare function bulkScrape(
   urls: string[],
-  apiKey: string,
+  apiKey: string | ClientOptions,
   options?: BulkScrapeOptions
 ): Promise<BulkScrapeResult>;
 

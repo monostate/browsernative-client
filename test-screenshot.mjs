@@ -3,7 +3,7 @@ import { BrowserNativeClient } from './index.js';
 console.log('🧪 Testing Screenshot Functionality\n');
 
 const client = new BrowserNativeClient('bnca_test_key_for_local_testing_123456789', {
-  baseUrl: 'https://bnca-api.fly.dev',
+  baseUrl: process.env.BNCA_API_URL || 'http://localhost:3001',
   verbose: true
 });
 

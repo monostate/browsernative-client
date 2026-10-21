@@ -1,5 +1,18 @@
 # Changelog
 
+## [3.0.0] - 2026-10-20
+
+### Breaking Changes
+- **No hosted default.** The Browser Native hosted API (bnca-api.fly.dev / bnca.monostate.ai) has been retired. `baseUrl` is now required and points at a node-scraper API you host.
+- **API key is optional.** `new BrowserNativeClient({ baseUrl, apiKey? })` (the 2.x `(apiKey, { baseUrl })` shape still works). `x-api-key` and the WebSocket `apiKey` parameter are only sent when a key is set.
+- Convenience functions accept an options object in place of the key: `quickScrape(url, { baseUrl, apiKey? })`.
+
+### Added
+- Result types carry node-scraper v3 outcome fields: `contentStatus`, `httpStatus`, `finalUrl`; `method` widened (`direct-fetch`, `pdf`, `failed`, `error`).
+- `ClientOptions.baseUrl` (required) and `ClientOptions.apiKey` in the type definitions.
+- A test suite (`npm test`) against a local stub API.
+- README documents the HTTP/WebSocket contract to host.
+
 ## [2.0.0] - 2026-03-07
 
 ### Added

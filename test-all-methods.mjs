@@ -9,7 +9,7 @@ async function testAllMethods() {
   
   const client = new BrowserNativeClient(API_KEY, {
     verbose: true,
-    baseUrl: 'https://bnca-api.fly.dev'
+    baseUrl: process.env.BNCA_API_URL || 'http://localhost:3001'
   });
   
   let passed = 0;
