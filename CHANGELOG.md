@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- `engines.node` is now `>=22.0.0`. Node 18 and 20 are end-of-life and no longer
+  receive security fixes (see the
+  [October 2026 Node.js security release](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases)).
+
 ## [3.0.0] - 2026-10-20
 
 ### Breaking Changes
