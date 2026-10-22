@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [3.1.0] - 2026-10-22
 
 ### Changed
 - `engines.node` is now `>=22.23.4` (`.nvmrc` pins it; `engine-strict` in `.npmrc` enforces it for contributors). Node 18 and 20 are end-of-life and no longer

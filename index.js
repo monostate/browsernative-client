@@ -8,7 +8,7 @@
  * There is no hosted default: you run the API and point the client at it.
  */
 
-const USER_AGENT = 'Browser Native Client SDK/3.0.0';
+const USER_AGENT = 'Browser Native Client SDK/3.1.0';
 
 export class BrowserNativeClient {
   /**

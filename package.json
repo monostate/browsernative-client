@@ -1,6 +1,6 @@
 {
   "name": "@monostate/browsernative-client",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "JavaScript/TypeScript client for a self-hosted node-scraper API (web scraping, screenshots, AI analysis, browser sessions)",
   "type": "module",
   "main": "index.js",
