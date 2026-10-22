@@ -8,7 +8,10 @@
  * There is no hosted default: you run the API and point the client at it.
  */
 
-const USER_AGENT = 'Browser Native Client SDK/3.1.0';
+// Keep in sync with package.json "version"; test/client.test.mjs fails the suite when they drift.
+// (A constant, not a package.json read: this module also runs in browsers and edge runtimes.)
+const SDK_VERSION = '3.1.0';
+const USER_AGENT = `Browser Native Client SDK/${SDK_VERSION}`;
 
 export class BrowserNativeClient {
   /**

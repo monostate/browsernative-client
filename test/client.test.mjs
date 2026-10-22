@@ -2,7 +2,10 @@ import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import { once } from 'node:events';
+import { createRequire } from 'node:module';
 import { BrowserNativeClient, quickScrape } from '../index.js';
+
+const pkg = createRequire(import.meta.url)('../package.json');
 
 async function startApi() {
   const hits = [];
@@ -45,7 +48,7 @@ describe('BrowserNativeClient (self-hosted API)', () => {
     assert.equal(r.data.metadata.contentStatus, 'usable');
     assert.equal(api.hits[0].headers['x-api-key'], 'k1');
     assert.equal(api.hits[0].url, '/scrapeurl');
-    assert.match(api.hits[0].headers['user-agent'], /3\.0\.0/);
+    assert.equal(api.hits[0].headers['user-agent'], `Browser Native Client SDK/${pkg.version}`);
     const noKey = new BrowserNativeClient({ baseUrl: api.base });
     await noKey.scrape('https://example.test');
     assert.equal('x-api-key' in api.hits[1].headers, false);
